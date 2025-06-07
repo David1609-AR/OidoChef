@@ -1,0 +1,13 @@
+package com.example.appoidochef.data.model;
+
+public class LoginRequest {
+    private String username;
+    private String password;
+
+    public LoginRequest(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
+
+    // Getters y setters (si usas Gson, no son estrictamente necesarios)
+}

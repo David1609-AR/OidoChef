@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    android:background="@drawable/black_btn">
+
+    <TextView
+        android:id="@+id/txtMesaPedido"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Mesa: 1"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF" />
+
+    <TextView
+        android:id="@+id/txtPersonasPedido"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Personas: 2"
+        android:textSize="16sp"
+        android:textColor="#CCCCCC"
+        android:layout_marginTop="4dp" />
+
+    <TextView
+        android:id="@+id/txtProductosPedido"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="• Producto x1\n• Otro producto x2"
+        android:textSize="15sp"
+        android:textColor="#DDDDDD"
+        android:layout_marginTop="8dp" />
+</LinearLayout>

@@ -1,0 +1,13 @@
+<resources>
+    <!-- Colores retro pastel vivos -->
+    <color name="retro_bg">#FFF8F1</color>
+    <color name="pine_tree">#2C3639</color>
+    <color name="old_lace">#FAF3E0</color>
+    <color name="retroPeach">#FFD1BA</color>
+    <color name="retroMint">#A8D5BA</color>
+    <color name="retroSky">#B8E1FF</color>
+    <color name="retroLavender">#E3D4F3</color>
+    <color name="retroAccent">#A3A1A1</color>
+    <color name="retroTextDark">#2C2C2C</color>
+
+</resources>

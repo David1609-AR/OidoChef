@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="8dp">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="0dp" android:layout_height="wrap_content"
+        android:layout_weight="1">
+
+        <TextView
+            android:id="@+id/txtNombreProducto"
+            android:text="Producto"
+            android:textSize="16sp"
+            android:textColor="#000"/>
+
+        <TextView
+            android:id="@+id/txtCantidad"
+            android:text="Cantidad"
+            android:textSize="14sp"/>
+
+        <TextView
+            android:id="@+id/txtPrecio"
+            android:text="Precio"
+            android:textSize="14sp"/>
+    </LinearLayout>
+
+    <ImageButton
+        android:id="@+id/btnEliminar"
+        android:src="@android:drawable/ic_delete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="Eliminar"/>
+</LinearLayout>

@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">AppOidoChef Mobile</string>
+    <string name="title_nuevo_pedido">Nuevo Pedido</string>
+    <string name="hint_item">Ej: Pizza Margarita</string>
+    <string name="hint_cantidad">Cantidad</string>
+    <string name="hint_notas">Notas especiales</string>
+    <string name="btn_enviar">Enviar Pedido</string>
+    <string name="msg_pedido_enviado">Pedido enviado con éxito!</string>
+    <string name="error_conexion">Error de conexión. Verifica tu red.</string>
+    <string name="campos_requeridos">Complete los campos requeridos</string>
+    <string name="action_settings">Configuración</string>
+    <string name="main_fragment_label">Pantalla Principal</string>
+    <string name="first_fragment_label">Primer Fragmento</string>
+    <string name="second_fragment_label">Segundo Fragmento</string>
+</resources>

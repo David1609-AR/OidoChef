@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/cardMesa"
+    android:layout_width="match_parent"
+    android:layout_height="100dp"
+    android:layout_margin="8dp"
+    android:elevation="6dp"
+    android:radius="16dp"
+    android:backgroundTint="#AA000000">
+
+    <TextView
+        android:id="@+id/txtNumeroMesa"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:textSize="20sp"
+        android:text="Mesa 1"
+        android:textColor="@android:color/white"
+        android:textStyle="bold" />
+</androidx.cardview.widget.CardView>
