@@ -1,5 +1,4 @@
 package com.example.appoidochef.ui.main;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,8 +36,11 @@ public class CategoriaAdapter extends RecyclerView.Adapter<CategoriaAdapter.View
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         String categoria = categorias.get(position);
         holder.btnCategoria.setText(categoria);
+
         holder.btnCategoria.setOnClickListener(v -> {
-            if (listener != null) listener.onCategoriaClick(categoria);
+            if (listener != null) {
+                listener.onCategoriaClick(categoria);
+            }
         });
     }
 

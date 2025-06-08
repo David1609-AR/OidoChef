@@ -36,18 +36,48 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+/**
+ * Actividad principal que muestra la lista de mesas y maneja la conexión WebSocket
+ * para recibir notificaciones en tiempo real de pedidos listos.
+ */
 public class MainActivity extends AppCompatActivity {
 
+    // Constantes
     private static final String CHANNEL_ID = "canal_pedidos";
-    private ActivityResultLauncher<String> requestPermissionLauncher;
+
+    // Componentes UI
     private RecyclerView recyclerViewMesas;
     private MesaAdapter mesaAdapter;
+
+    // Permisos y WebSocket
+    private ActivityResultLauncher<String> requestPermissionLauncher;
+    private final BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String mensaje = intent.getStringExtra("mensaje");
+            handleIncomingMessage(mensaje);
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Configuración del launcher para permisos
+        configurarPermisos();
+
+        // Inicialización de vistas
+        inicializarVistas();
+
+        // Cargar lista de mesas
+        cargarMesas();
+    }
+
+    /**
+     * Configura el launcher para solicitar permisos de notificación
+     */
+    private void configurarPermisos() {
         requestPermissionLauncher = registerForActivityResult(
                 new ActivityResultContracts.RequestPermission(),
                 granted -> {
@@ -59,16 +89,15 @@ public class MainActivity extends AppCompatActivity {
                 });
 
         checkAndRequestNotificationPermission();
-
-        recyclerViewMesas = findViewById(R.id.recyclerViewMesas);
-        recyclerViewMesas.setLayoutManager(new GridLayoutManager(this, 2));
-
-        cargarMesas();
     }
 
+    /**
+     * Verifica y solicita permisos de notificación según versión de Android
+     */
     private void checkAndRequestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
                 requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
             } else {
                 iniciarServicioWebSocket();
@@ -77,9 +106,22 @@ public class MainActivity extends AppCompatActivity {
             iniciarServicioWebSocket();
         }
     }
+
+    /**
+     * Inicializa las vistas y configura el RecyclerView
+     */
+    private void inicializarVistas() {
+        recyclerViewMesas = findViewById(R.id.recyclerViewMesas);
+        recyclerViewMesas.setLayoutManager(new GridLayoutManager(this, 2)); // Grid de 2 columnas
+    }
+
+    /**
+     * Inicia el servicio WebSocket y configura el listener
+     */
     private void iniciarServicioWebSocket() {
         crearCanalNotificaciones();
 
+        // Iniciar servicio WebSocket
         Intent serviceIntent = new Intent(this, WebSocketService.class);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(serviceIntent);
@@ -87,14 +129,15 @@ public class MainActivity extends AppCompatActivity {
             startService(serviceIntent);
         }
 
+        // Configurar WebSocketManager
         WebSocketManager.getInstance().init(getApplicationContext());
         WebSocketManager.getInstance().connect();
-
-        // ✅ REGISTRA EL LISTENER
         WebSocketManager.getInstance().addListener(this::handleIncomingMessage);
     }
 
-
+    /**
+     * Crea el canal de notificaciones para Android 8+
+     */
     private void crearCanalNotificaciones() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
@@ -110,19 +153,16 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Carga la lista de mesas desde la API
+     */
     private void cargarMesas() {
         ApiService apiService = ApiClient.getApiService();
         apiService.obtenerMesas().enqueue(new Callback<List<MesaAPI>>() {
             @Override
             public void onResponse(Call<List<MesaAPI>> call, Response<List<MesaAPI>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    mesaAdapter = new MesaAdapter(MainActivity.this, response.body(), mesaSeleccionada -> {
-                        Intent intent = new Intent(MainActivity.this, ProductoActivity.class);
-                        intent.putExtra("mesaId", mesaSeleccionada.getId());
-                        intent.putExtra("mesaNombre", String.valueOf(mesaSeleccionada.getNumero()));
-                        startActivity(intent);
-                    });
-                    recyclerViewMesas.setAdapter(mesaAdapter);
+                    configurarAdaptadorMesas(response.body());
                 } else {
                     Toast.makeText(MainActivity.this, "Error al cargar mesas", Toast.LENGTH_SHORT).show();
                 }
@@ -135,6 +175,23 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Configura el adaptador de mesas con los datos recibidos
+     */
+    private void configurarAdaptadorMesas(List<MesaAPI> mesas) {
+        mesaAdapter = new MesaAdapter(MainActivity.this, mesas, mesaSeleccionada -> {
+            // Navegar a ProductoActivity con los datos de la mesa
+            Intent intent = new Intent(MainActivity.this, ProductoActivity.class);
+            intent.putExtra("mesaId", mesaSeleccionada.getId());
+            intent.putExtra("mesaNombre", String.valueOf(mesaSeleccionada.getNumero()));
+            startActivity(intent);
+        });
+        recyclerViewMesas.setAdapter(mesaAdapter);
+    }
+
+    /**
+     * Muestra notificación cuando un producto está listo
+     */
     private void mostrarNotificacionProductoListo(JSONObject json) {
         String nombre = json.optString("nombre", "Producto");
         int cantidad = json.optInt("cantidad", 1);
@@ -151,31 +208,10 @@ public class MainActivity extends AppCompatActivity {
             manager.notify((int) System.currentTimeMillis(), builder.build());
         }
     }
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(receiver, new IntentFilter("MENSAJE_WEBSOCKET"), Context.RECEIVER_NOT_EXPORTED);
-        } else {
-            registerReceiver(receiver, new IntentFilter("MENSAJE_WEBSOCKET"));
-        }
-    }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        unregisterReceiver(receiver);
-    }
-
-    private final BroadcastReceiver receiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String mensaje = intent.getStringExtra("mensaje");
-            handleIncomingMessage(mensaje); // ya tienes esta función
-        }
-    };
-
-
+    /**
+     * Maneja los mensajes entrantes del WebSocket
+     */
     private void handleIncomingMessage(String message) {
         runOnUiThread(() -> {
             try {
@@ -189,5 +225,24 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Registrar receiver para mensajes WebSocket
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(receiver, new IntentFilter("MENSAJE_WEBSOCKET"),
+                    Context.RECEIVER_NOT_EXPORTED);
+        } else {
+            registerReceiver(receiver, new IntentFilter("MENSAJE_WEBSOCKET"));
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // Desregistrar receiver para evitar leaks
+        unregisterReceiver(receiver);
     }
 }

@@ -45,18 +45,12 @@ public class ProductoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_productos);
 
-        // Referencias de vista
         textMesa = findViewById(R.id.textMesa);
         recyclerViewCategorias = findViewById(R.id.recyclerViewCategorias);
         recyclerViewProductos = findViewById(R.id.recyclerViewProductos);
         btnEnviarPedido = findViewById(R.id.btnEnviarPedido);
         btnVerPedidosExistentes = findViewById(R.id.btnVerPedidosExistentes);
 
-        // Configurar layout vertical para ambas listas
-        recyclerViewCategorias.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        recyclerViewProductos.setLayoutManager(new LinearLayoutManager(this)); // Productos en vertical
-
-        // Obtener datos de la mesa
         Intent intent = getIntent();
         int mesaId = intent.getIntExtra("mesaId", -1);
         String mesaNombre = intent.getStringExtra("mesaNombre");
@@ -73,7 +67,9 @@ public class ProductoActivity extends AppCompatActivity {
         mesaSeleccionada = new Mesa(mesaId, numeroMesa);
         textMesa.setText("Mesa " + numeroMesa);
 
-        // Obtener productos del servidor
+        recyclerViewCategorias.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        recyclerViewProductos.setLayoutManager(new LinearLayoutManager(this));
+
         ApiService apiService = ApiClient.getClient().create(ApiService.class);
         apiService.getProductos().enqueue(new Callback<List<Producto>>() {
             @Override
@@ -92,14 +88,12 @@ public class ProductoActivity extends AppCompatActivity {
             }
         });
 
-        // Ver pedidos anteriores
         btnVerPedidosExistentes.setOnClickListener(v -> {
-            Intent intentPedidos = new Intent(this, PedidoExistenteActivity.class);
+            Intent intentPedidos = new Intent(ProductoActivity.this, PedidoExistenteActivity.class);
             intentPedidos.putExtra("mesaId", mesaSeleccionada.getIdMesa());
             startActivity(intentPedidos);
         });
 
-        // Enviar pedido
         btnEnviarPedido.setOnClickListener(v -> {
             List<ItemPedidoAPI> carrito = CarritoManager.getCarrito(mesaSeleccionada.getNumeroMesa());
             if (carrito.isEmpty()) {
@@ -119,27 +113,21 @@ public class ProductoActivity extends AppCompatActivity {
         for (Producto p : todosLosProductos) {
             categoriasSet.add(p.getCategoria());
         }
-
         List<String> categorias = new ArrayList<>(categoriasSet);
 
-        if (categorias.isEmpty()) {
-            Toast.makeText(this, "No hay categorías disponibles", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Adaptador de categorías
         categoriaAdapter = new CategoriaAdapter(categorias, categoria -> {
             List<Producto> filtrados = filtrarPorCategoria(categoria);
             productoAdapter.actualizarLista(filtrados);
         });
+
         recyclerViewCategorias.setAdapter(categoriaAdapter);
 
-        // Mostrar productos de la primera categoría
         List<Producto> iniciales = filtrarPorCategoria(categorias.get(0));
         productoAdapter = new ProductoAdapter(iniciales, producto -> {
             CarritoManager.agregarProducto(mesaSeleccionada.getNumeroMesa(), producto);
-            Toast.makeText(this, producto.getNombre() + " añadido al carrito", Toast.LENGTH_SHORT).show();
+            Toast.makeText(ProductoActivity.this, producto.getNombre() + " añadido al carrito", Toast.LENGTH_SHORT).show();
         });
+
         recyclerViewProductos.setAdapter(productoAdapter);
     }
 
